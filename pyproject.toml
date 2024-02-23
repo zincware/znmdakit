@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "znmdakit"
+version = "0.1.0"
+description = ""
+authors = ["Fabian Zills <fzills@icp.uni-stuttgart.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+MDAnalysis = "^2.7.0"
+ZnTrack = "^0.7.2"
+tidynamics = "^1.1.2"
+pint = "^0.23"
+ase = "^3.22.1"
+znh5md = "^0.1.9"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+ruff = "^0.1.11"
+mdanalysisdata = "^0.9.0"
+mdanalysistests = "^2.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
