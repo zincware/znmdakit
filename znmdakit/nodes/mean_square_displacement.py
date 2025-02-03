@@ -4,20 +4,27 @@ import pandas as pd
 import zntrack
 from MDAnalysis import Universe
 
-from znmdakit.transformations import UnWrap
+from znmdakit.transformations import UnWrap, get_com_transform
 
 
 class EinsteinMSD(zntrack.Node):
     universe: Universe = zntrack.deps()
     select: str = zntrack.params()
     results: pd.DataFrame = zntrack.plots(y="msd", x="lagtimes")
+    apply_com_transform: bool = zntrack.params(False)
+
     # TODO: these two should be read from the h5md file
     timestep: float = zntrack.params(None)
     sampling_rate: int = zntrack.params(None)
 
     def run(self) -> None:
         universe = self.universe
-        universe.trajectory.add_transformations(UnWrap())
+
+        transformations = []
+
+        if self.apply_com_transform:
+            transformations.extend(get_com_transform(universe))
+        universe.trajectory.add_transformations(*transformations, UnWrap()) # UnWrap is the last one!
 
         MSD = msd.EinsteinMSD(universe, select=self.select, msd_type="xyz", fft=True)
         MSD.run(verbose=True)

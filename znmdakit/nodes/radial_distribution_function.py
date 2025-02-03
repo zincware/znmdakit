@@ -3,6 +3,8 @@ import zntrack
 from MDAnalysis import Universe
 from MDAnalysis.analysis import rdf
 
+from znmdakit.transformations import get_com_transform
+
 
 class InterRDF(zntrack.Node):
     universe: Universe = zntrack.deps()
@@ -11,10 +13,16 @@ class InterRDF(zntrack.Node):
     nbins: int = zntrack.params()
     range: str | tuple = zntrack.params("auto")
 
+    apply_com_transform: bool = zntrack.params(False) # replace the position of the first atom in each residue with the center of mass and name it COM
+
     results: pd.DataFrame = zntrack.plots(y="g(r)", x="r")
 
     def run(self):
         universe = self.universe
+
+        if self.apply_com_transform:
+            transformations = get_com_transform(universe)
+            universe.trajectory.add_transformations(*transformations)
 
         RDF = rdf.InterRDF(
             universe.select_atoms(self.g1),

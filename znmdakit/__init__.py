@@ -1,5 +1,6 @@
 from znmdakit.nodes.mean_square_displacement import EinsteinMSD
 from znmdakit.nodes.radial_distribution_function import InterRDF
 from znmdakit.nodes.universe import Universe
+from znmdakit.nodes.write_xyz import WriteXYZ
 
-__all__ = ["InterRDF", "EinsteinMSD", "Universe"]
+__all__ = ["InterRDF", "EinsteinMSD", "Universe", "WriteXYZ"]

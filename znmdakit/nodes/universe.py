@@ -23,13 +23,7 @@ class Universe(zntrack.Node):
 
         residues = {k: smiles2atoms(smiles=v) for k, v in self.residues.items()}
 
-        mda_residues = {}
-
-        for idx, residue in enumerate(residues):
-            mda_residues[residue] = universe.add_Residue(
-                resid=idx,
-                resname=residue,
-            )
+        universe.add_TopologyAttr("resnames")
 
         if len(self.residues) > 0:
             for mol in universe.atoms.fragments:
@@ -42,7 +36,12 @@ class Universe(zntrack.Node):
                         residues[residue].get_chemical_symbols()
                     ):
                         # https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.add_Residue
-                        universe.atoms[mol.indices].residues = mda_residues[residue]
+                        mda_residue = universe.add_Residue(
+                            resid=len(universe.residues),
+                            resname=residue,
+                            # resnum=len(mda_residues),
+                        )
+                        universe.atoms[mol.indices].residues = mda_residue
                         break
                 else:
                     log.warning(

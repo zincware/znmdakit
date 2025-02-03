@@ -6,6 +6,7 @@ import MDAnalysis as mda
 import znh5md
 from ase.neighborlist import NeighborList, natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
+from tqdm import tqdm
 
 
 def get_bonds(atoms: ase.Atoms) -> list[tuple[int, int]]:
