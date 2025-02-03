@@ -11,7 +11,9 @@ requires-python = ">=3.11"
 dependencies = [
     "ase>=3.24.0",
     "mdanalysis>=2.8.0",
+    "pandas>=2.2.3",
     "pint>=0.24.4",
+    "rdkit2ase>=0.1.4",
     "tidynamics>=1.1.2",
     "znh5md>=0.4.3",
     "zntrack>=0.8.2",

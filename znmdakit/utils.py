@@ -1,57 +1,80 @@
-import h5py
-import numpy as np
-import logging
+from pathlib import Path
 
-log = logging.getLogger(__name__)
+import ase
+import ase.atoms
+import MDAnalysis as mda
+import znh5md
+from ase.neighborlist import NeighborList, natural_cutoffs
+from MDAnalysis.coordinates.H5MD import H5MDReader
 
-def convert_legacy_znh5md(filename, *, force=False):
-    """Fix the issues with the legacy h5md files to comply with the current h5md standard."""
-    if not force:
-        log.critical("This function will modify the file in place. It will remove all observables and make some assumptions. Set 'force=True' to proceed.")
-        return
 
-    with h5py.File(filename, mode="a") as f:
-        # if the first group in "particles" is not named "trajectory", rename it
-        particle_group = list(f["particles"].keys())[0]
-        log.critical(f"Particle groups: {particle_group}")
-        # if particle_groups[0] != "trajectory":
-        #     log.critical(f"Renaming {particle_groups[0]} to trajectory")
-        #     f["particles"].move(particle_groups[0], "trajectory")
+def get_bonds(atoms: ase.Atoms) -> list[tuple[int, int]]:
+    """Calculate the bonds in an ASE Atoms object.
 
-        # fix PBC
-        # del f[f"particles/{particle_groups}/box/edges/value"]
-        log.critical(f"Fixing PBC")
-        f[f"particles/{particle_group}/box"].attrs['boundary'] = ["periodic", "periodic", "periodic"]
-        f[f"particles/{particle_group}/box"].attrs['dimension'] = 3
-        del f[f"particles/{particle_group}/box/edges/time"]
-        del f[f"particles/{particle_group}/box/edges/step"]
-        del f[f"particles/{particle_group}/box/boundary"]
-        del f[f"particles/{particle_group}/box/dimension"]
-        length = len(f[f"particles/{particle_group}/box/edges/value"])
-        f[f"particles/{particle_group}/box/edges/time"] = np.linspace(0, 1, length)
-        f[f"particles/{particle_group}/box/edges/step"] = np.arange(length)
-        
-        available_groups = list(f["particles"][particle_group].keys())
-        for group in available_groups:
-            # check if the group has a time / step attribute
-            if "time" in f[f"particles/{particle_group}/{group}"]:
-                log.critical(f"Replacing integer time with array for {group} in {particle_group}")
-                length = len(f[f"particles/{particle_group}/{group}/value"])
-                del f[f"particles/{particle_group}/{group}/time"]
-                del f[f"particles/{particle_group}/{group}/step"]
-                f[f"particles/{particle_group}/{group}/time"] = np.linspace(0, 1, length)
-                f[f"particles/{particle_group}/{group}/step"] = np.arange(length)
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        The ASE Atoms object for which to calculate bonds.
 
-        # now fix /observables
-        log.critical(f"Removing observables")
-        del f[f"observables/{particle_group}"]
-        # available_groups = list(f["observables"][particle_group].keys())
-        # for group in available_groups:
-            # # check if the group has a time / step attribute
-            # if "time" in f[f"observables/{particle_group}/{group}"]:
-            #     log.critical(f"Replacing integer time with array for {group} in observables/{particle_group}")
-            #     length = len(f[f"observables/{particle_group}/{group}/value"])
-            #     del f[f"observables/{particle_group}/{group}/time"]
-            #     del f[f"observables/{particle_group}/{group}/step"]
-            #     f[f"observables/{particle_group}/{group}/time"] = np.linspace(0, 1, length)
-            #     f[f"observables/{particle_group}/{group}/step"] = np.arange(length)
+    Returns
+    -------
+    list of tuple of int
+        A list of tuples, each containing two indices of bonded atoms.
+    """
+    # Step 1: Calculate natural cutoffs
+    cutoffs = natural_cutoffs(atoms)
+
+    # Step 2: Create a neighbor list
+    nl = NeighborList(cutoffs, self_interaction=False, bothways=True)
+    nl.update(atoms)
+
+    # Step 3: Generate the bonds list
+    bonds = []
+    for i in range(len(atoms)):
+        indices, offsets = nl.get_neighbors(i)
+        for j in indices:
+            if (j, i) not in bonds:  # Avoid duplicate bonds
+                bonds.append((i, j))
+
+    return bonds
+
+
+def get_universe(file: Path) -> mda.Universe:
+    """Create a MDAnalysis Universe from a H5MD file.
+
+    Parameters
+    ----------
+    file : Path
+        The path to the H5MD file.
+
+    Returns
+    -------
+    mda.Universe
+        The MDAnalysis Universe object.
+    """
+
+    if file.suffix not in [".h5", ".h5md", ".hdf5"]:
+        raise ValueError("Currently, only HDF5 files are supported.")
+
+    atoms: ase.Atoms = znh5md.read(file)
+    # consider https://docs.mdanalysis.org/stable/documentation_pages/guesser_modules/default_guesser.html#MDAnalysis.guesser.default_guesser.DefaultGuesser.guess_bonds
+    bonds = get_bonds(atoms)
+
+    universe = mda.Universe.empty(n_atoms=len(atoms), trajectory=True)
+    # https://userguide.mdanalysis.org/stable/examples/constructing_universe.html#Adding-topology-attributes
+    universe.add_TopologyAttr("names", atoms.get_chemical_symbols())
+    universe.add_TopologyAttr("type", atoms.get_chemical_symbols())
+    universe.add_TopologyAttr("masses", atoms.get_masses())
+    universe.add_TopologyAttr("bonds", bonds)
+
+    # TODO: warning if the box changes in time! We do not support NPT yet!
+    universe.dimensions = atoms.cell.cellpar()
+
+    # add new unit translation
+    # TODO: we assume these units, might not fit!
+    H5MDReader._unit_translation["force"].update({"eV/Angstrom": "kJ/(mol*Angstrom)"})
+
+    reader = H5MDReader(file, convert_units=False)
+    universe.trajectory = reader
+
+    return universe

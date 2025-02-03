@@ -1,14 +1,14 @@
-import pytest
-import MDAnalysis as mda
-from MDAnalysis.coordinates.H5MD import H5MDReader
-import pathlib
-import h5py
-import numpy as np
-from ase.data import chemical_symbols
-import shutil
 import os
-import git
+import pathlib
+import shutil
+
 import dvc.cli
+import git
+import h5py
+import MDAnalysis as mda
+import pytest
+from ase.data import chemical_symbols
+from MDAnalysis.coordinates.H5MD import H5MDReader
 
 FILE = pathlib.Path(__file__).parent / "lammps_npt.h5"
 
@@ -31,12 +31,14 @@ def get_mda_universe():
 
 def get_znmda_universe():
     import znmdakit
+
     return znmdakit.Universe(FILE).get_universe()
 
 
 @pytest.fixture(params=[get_mda_universe, get_znmda_universe])
 def universe(request):
     return request.param()
+
 
 @pytest.fixture
 def repo_path(tmp_path, request):
@@ -46,6 +48,7 @@ def repo_path(tmp_path, request):
     dvc.cli.main(["init"])
 
     return tmp_path
+
 
 @pytest.fixture
 def lammps_npt():
