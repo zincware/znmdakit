@@ -1,25 +1,27 @@
-[tool.poetry]
+[project]
 name = "znmdakit"
 version = "0.1.0"
-description = ""
-authors = ["Fabian Zills <fzills@icp.uni-stuttgart.de>"]
+description = "MD post processing tools."
+authors = [
+    { name = "Fabian Zills", email = "fzills@icp.uni-stuttgart.de" },
+]
+license = "Apache-2.0"
 readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ase>=3.24.0",
+    "mdanalysis>=2.8.0",
+    "pint>=0.24.4",
+    "tidynamics>=1.1.2",
+    "znh5md>=0.4.3",
+    "zntrack>=0.8.2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-MDAnalysis = "^2.7.0"
-ZnTrack = "^0.7.2"
-tidynamics = "^1.1.2"
-pint = "^0.23"
-ase = "^3.22.1"
-znh5md = "^0.1.9"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.4"
-ruff = "^0.1.11"
-mdanalysisdata = "^0.9.0"
-mdanalysistests = "^2.7.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
