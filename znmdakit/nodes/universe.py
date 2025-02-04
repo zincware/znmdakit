@@ -3,15 +3,21 @@ from pathlib import Path
 
 import zntrack
 from rdkit2ase import smiles2atoms
+import typing as t
 
 from znmdakit.utils import get_universe
 
 log = logging.getLogger(__name__)
 
+# class OverwriteDict(t.TypedDict):
+#     timestep: float
+#     sampling_rate: int
+
 
 class Universe(zntrack.Node):
     data_file: str = zntrack.deps_path()
     residues: dict[str, str] = zntrack.params()  # dict[id, smiles]
+    # overwrite: OverwriteDict = zntrack.params(default_factory=dict)
 
     def run(self):
         print(self.universe)

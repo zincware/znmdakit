@@ -42,21 +42,21 @@ class UnWrap(TransformationBase):
 
 # TODO: consider using the "BeadGroup" suggested in the gist instead
 
-class COMTransform(TransformationBase):
 
+class COMTransform(TransformationBase):
     def __init__(self, reference: AtomGroup, name: str):
         self.reference = reference
         self.com_atoms = reference.select_atoms(f"name {name}")
-        
+
         # sanity check
         a = self.get_com().shape
         b = self.com_atoms.positions.shape
         if a != b:
             raise ValueError(f"Shape mismatch: {a} != {b}")
-        
+
     def get_com(self):
         return self.reference.center_of_mass(unwrap=True, compound="fragments")
-    
+
     def __call__(self, ts):
         self.com_atoms.positions = self.get_com()
         return ts
@@ -75,6 +75,6 @@ def get_com_transform(universe) -> list:
             if residue.resname not in transformations:
                 transformations[residue.resname] = COMTransform(
                     reference=universe.select_atoms(f"resname {residue.resname}"),
-                    name="COM"
+                    name="COM",
                 )
     return list(transformations.values())

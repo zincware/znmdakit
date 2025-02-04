@@ -4,6 +4,7 @@ from pathlib import Path
 from znmdakit.transformations import UnWrap, get_com_transform
 from tqdm import tqdm
 
+
 class WriteXYZ(zntrack.Node):
     universe: Universe = zntrack.deps()
     frames_path: Path = zntrack.outs_path(zntrack.nwd / "frames.xyz")

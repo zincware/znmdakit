@@ -13,7 +13,9 @@ class InterRDF(zntrack.Node):
     nbins: int = zntrack.params()
     range: str | tuple = zntrack.params("auto")
 
-    apply_com_transform: bool = zntrack.params(False) # replace the position of the first atom in each residue with the center of mass and name it COM
+    apply_com_transform: bool = zntrack.params(
+        False
+    )  # replace the position of the first atom in each residue with the center of mass and name it COM
 
     results: pd.DataFrame = zntrack.plots(y="g(r)", x="r")
 
