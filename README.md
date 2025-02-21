@@ -31,7 +31,7 @@ with project:
 
     universe = znmdakit.Universe(
         # data_file=znflow.resolve(system.traj_file), # hotfix for https://github.com/zincware/ZnTrack/pull/875
-        data=system.frames,
+        data=system.frames, # can be either one
         residues={"BF": BF4, "Im": BMIM},
     )
 
@@ -58,13 +58,7 @@ with project.group("BF4"):
         always_changed=False,
     )
 
-project.run()
-
-rdf.load()
-msd.load()
-
-print(rdf.results)
-print(msd.results)
+project.build()
 ```
 
 ## Available Nodes
