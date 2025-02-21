@@ -38,7 +38,7 @@ with project:
 with project.group("BF4"):
     znmdakit.InterRDF(
         universe=universe.universe,
-        g1="name COM and resname BF",
+        g1="name COM and resname BF", # replace with e.g. name O and set apply_com_transform=False
         g2="name COM and resname BF",
         nbins=1000,
         apply_com_transform=True,
