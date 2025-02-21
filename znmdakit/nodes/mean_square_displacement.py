@@ -76,7 +76,7 @@ class SelfDiffusionFromMSD(zntrack.Node):
             self.data.results.msd[self.start_time + 1 : self.end_time],
         )
 
-        diff = (linear_model.slope  / 6) * ureg.angstrom**2 / ureg.picosecond
+        diff = (linear_model.slope / 6) * ureg.angstrom**2 / ureg.picosecond
         # diff = diff.to(ureg.meter**2 / ureg.second)
         diff = diff.to(ureg.angstrom**2 / ureg.nanosecond)
         # convert to nm / s
@@ -90,10 +90,18 @@ class SelfDiffusionFromMSD(zntrack.Node):
 
         self.fit_figure.parent.mkdir(parents=True, exist_ok=True)
 
-        fig, ax = plt.subplots(figsize=(6, 4), dpi=150)  # Adjust figure size and resolution
+        fig, ax = plt.subplots(
+            figsize=(6, 4), dpi=150
+        )  # Adjust figure size and resolution
 
         # Plot MSD and fit line with improved styling
-        ax.plot(self.data.results.index, self.data.results.msd, label="MSD", lw=2, color="royalblue")
+        ax.plot(
+            self.data.results.index,
+            self.data.results.msd,
+            label="MSD",
+            lw=2,
+            color="royalblue",
+        )
         ax.plot(
             self.data.results.index,
             linear_model.slope * self.data.results.index + linear_model.intercept,
@@ -121,7 +129,9 @@ class SelfDiffusionFromMSD(zntrack.Node):
             f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\nR²: {linear_model.rvalue:.2f}",
             transform=ax.transAxes,
             fontsize=10,
-            bbox=dict(facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"),
+            bbox=dict(
+                facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"
+            ),
         )
 
         fig.savefig(self.fit_figure, bbox_inches="tight")
