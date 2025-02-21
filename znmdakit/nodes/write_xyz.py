@@ -1,8 +1,10 @@
+from pathlib import Path
+
 import zntrack
 from MDAnalysis import Universe
-from pathlib import Path
-from znmdakit.transformations import UnWrap, get_com_transform
 from tqdm import tqdm
+
+from znmdakit.transformations import UnWrap, get_com_transform
 
 
 class WriteXYZ(zntrack.Node):

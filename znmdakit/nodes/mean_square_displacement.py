@@ -1,12 +1,13 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import MDAnalysis.analysis.msd as msd
 import numpy as np
 import pandas as pd
+import pint
 import zntrack
 from MDAnalysis import Universe
 from scipy.stats import linregress
-from pathlib import Path
-import matplotlib.pyplot as plt
-import pint
 
 from znmdakit.transformations import UnWrap, get_com_transform
 

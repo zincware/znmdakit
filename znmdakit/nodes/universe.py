@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
 
-import zntrack
-from rdkit2ase import smiles2atoms
 import ase
 import znh5md
+import zntrack
+from rdkit2ase import smiles2atoms
 
 from znmdakit.utils import get_universe
 

@@ -1,8 +1,8 @@
-import zntrack
 import typing as t
 
-from MDAnalysis import Universe
 import pint
+import zntrack
+from MDAnalysis import Universe
 
 ureg = pint.UnitRegistry()
 
