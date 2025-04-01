@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-import ase
+import ase.io
 import znh5md
 import zntrack
 from rdkit2ase import smiles2atoms
