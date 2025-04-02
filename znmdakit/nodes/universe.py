@@ -27,7 +27,7 @@ class Universe(zntrack.Node):
         io = znh5md.IO(
             self.frames_path, store="time", save_units=False
         )  # ensure H5Reader can read it.
-        
+
         io.extend(self.data)
 
     @property  # cached property needed?

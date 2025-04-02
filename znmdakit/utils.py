@@ -2,10 +2,10 @@ from pathlib import Path
 
 import ase.atoms
 import MDAnalysis as mda
+import numpy as np
 import znh5md
 from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
-import numpy as np
 
 
 def get_bonds(atoms: ase.Atoms, mult: float = 1.2) -> list[tuple[int, int]]:
@@ -60,7 +60,7 @@ def get_universe(file: Path) -> mda.Universe:
     if file.suffix not in [".h5", ".h5md", ".hdf5"]:
         raise ValueError("Currently, only HDF5 files are supported.")
 
-    atoms: ase.Atoms = znh5md.read(file)
+    atoms: ase.Atoms = znh5md.IO(file)[0]
     # consider https://docs.mdanalysis.org/stable/documentation_pages/guesser_modules/default_guesser.html#MDAnalysis.guesser.default_guesser.DefaultGuesser.guess_bonds
     bonds = get_bonds(atoms)
 
@@ -77,6 +77,7 @@ def get_universe(file: Path) -> mda.Universe:
     # add new unit translation
     # TODO: we assume these units, might not fit!
     H5MDReader._unit_translation["force"].update({"eV/Angstrom": "kJ/(mol*Angstrom)"})
+    H5MDReader._unit_translation["velocity"].update({"Angstrom/fs": "Angstrom/fs"})
 
     reader = H5MDReader(file, convert_units=False)
     universe.trajectory = reader
