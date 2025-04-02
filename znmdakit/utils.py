@@ -4,39 +4,37 @@ import ase
 import ase.atoms
 import MDAnalysis as mda
 import znh5md
-from ase.neighborlist import NeighborList, natural_cutoffs
+from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
+import networkx as nx
+import numpy as np
 
 
-def get_bonds(atoms: ase.Atoms) -> list[tuple[int, int]]:
+def get_bonds(atoms: ase.Atoms, mult:float = 1.2) -> list[tuple[int, int]]:
     """Calculate the bonds in an ASE Atoms object.
 
     Parameters
     ----------
     atoms : ase.Atoms
         The ASE Atoms object for which to calculate bonds.
+    mult : float
+        The multiplier for the cutoff distance.
 
     Returns
     -------
     list of tuple of int
         A list of tuples, each containing two indices of bonded atoms.
     """
-    # Step 1: Calculate natural cutoffs
-    cutoffs = natural_cutoffs(atoms)
-
-    # Step 2: Create a neighbor list
-    nl = NeighborList(cutoffs, self_interaction=False, bothways=True)
-    nl.update(atoms)
-
-    # Step 3: Generate the bonds list
-    bonds = []
-    for i in range(len(atoms)):
-        indices, offsets = nl.get_neighbors(i)
-        for j in indices:
-            if (j, i) not in bonds:  # Avoid duplicate bonds
-                bonds.append((i, j))
-
-    return bonds
+    assert all(atoms.pbc) is True
+    connectivity_matrix = np.zeros((len(atoms), len(atoms)), dtype=int)
+    distance_matrix = atoms.get_all_distances(mic=True)
+    np.fill_diagonal(distance_matrix, np.inf)
+    cutoffs = np.array(natural_cutoffs(atoms, mult=mult))
+    cutoffs = cutoffs[:, None] + cutoffs[None, :]
+    connectivity_matrix[distance_matrix <= cutoffs] += 1
+    G = nx.from_numpy_array(connectivity_matrix)
+    
+    return [(i, j) for i, j in G.edges() if i < j]
 
 
 def get_universe(file: Path) -> mda.Universe:

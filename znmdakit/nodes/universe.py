@@ -27,11 +27,8 @@ class Universe(zntrack.Node):
         io = znh5md.IO(
             self.frames_path, store="time", save_units=False
         )  # ensure H5Reader can read it.
-
-        if self.data is not None:
-            io.extend(self.data)
-        else:
-            io.append(ase.Atoms("H", positions=[[0, 0, 0]]))
+        
+        io.extend(self.data)
 
     @property  # cached property needed?
     def universe(self):
