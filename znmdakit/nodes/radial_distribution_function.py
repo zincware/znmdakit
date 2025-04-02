@@ -27,7 +27,6 @@ class InterRDF(zntrack.Node):
     figure_path: Path = zntrack.outs_path(zntrack.nwd / "rdf.png")
 
     results: pd.DataFrame = zntrack.plots(y="g(r)", x="r")
-    figure_path: Path = zntrack.plots_path(zntrack.nwd / "rdf.png")
 
     def run(self):
         universe = self.universe
