@@ -1,6 +1,6 @@
 import numpy as np
-from MDAnalysis.transformations import TransformationBase
 from MDAnalysis import AtomGroup
+from MDAnalysis.transformations import TransformationBase
 from tqdm import tqdm
 
 

@@ -1,9 +1,10 @@
 import logging
 from pathlib import Path
 
+import ase.io
+import znh5md
 import zntrack
 from rdkit2ase import smiles2atoms
-import typing as t
 
 from znmdakit.utils import get_universe
 
@@ -15,17 +16,24 @@ log = logging.getLogger(__name__)
 
 
 class Universe(zntrack.Node):
-    data_file: str = zntrack.deps_path()
+    data: list[ase.Atoms] = zntrack.deps(None)
     residues: dict[str, str] = zntrack.params()  # dict[id, smiles]
     # overwrite: OverwriteDict = zntrack.params(default_factory=dict)
 
+    frames_path: Path = zntrack.outs_path(zntrack.nwd / "frames.h5")
+
     def run(self):
-        print(self.universe)
+        self.frames_path.parent.mkdir(parents=True, exist_ok=True)
+        io = znh5md.IO(
+            self.frames_path, store="time", save_units=False
+        )  # ensure H5Reader can read it.
+        
+        io.extend(self.data)
 
     @property  # cached property needed?
     def universe(self):
         log.critical("Constructing universe")
-        universe = get_universe(Path(self.data_file))
+        universe = get_universe(self.frames_path)
 
         residues = {k: smiles2atoms(smiles=v) for k, v in self.residues.items()}
 

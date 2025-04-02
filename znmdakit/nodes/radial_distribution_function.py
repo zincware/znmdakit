@@ -1,4 +1,8 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 import zntrack
 from MDAnalysis import Universe
 from MDAnalysis.analysis import rdf
@@ -19,6 +23,8 @@ class InterRDF(zntrack.Node):
     apply_com_transform: bool = zntrack.params(
         False
     )  # replace the position of the first atom in each residue with the center of mass and name it COM
+
+    figure_path: Path = zntrack.outs_path(zntrack.nwd / "rdf.png")
 
     results: pd.DataFrame = zntrack.plots(y="g(r)", x="r")
     figure_path: Path = zntrack.plots_path(zntrack.nwd / "rdf.png")
@@ -45,20 +51,23 @@ class InterRDF(zntrack.Node):
         )
 
         self.results.set_index("r", inplace=True)
-        fig = self.get_figure()
-        fig.savefig(self.figure_path, bbox_inches="tight")
+        self.figure_path.parent.mkdir(parents=True, exist_ok=True)
+        figure = self.get_figure()
+        figure.savefig(self.figure_path, bbox_inches="tight")
 
-    def get_figure(self) -> plt.Figure:
+    def get_figure(self):
         sns.set_theme(style="whitegrid")  # Use a clean seaborn style
 
-        fig, ax = plt.subplots(figsize=(6, 4), dpi=100)  # Set figure size and resolution
+        fig, ax = plt.subplots(
+            figsize=(6, 4), dpi=100
+        )  # Set figure size and resolution
         ax.plot(self.results.index, self.results["g(r)"], color="tab:blue", lw=2)
 
         ax.set_ylabel("Radial Distribution Function, g(r)", fontsize=12)
         ax.set_xlabel("Distance, r (Å)", fontsize=12)
         ax.set_title(f"InterRDF: {self.g1} - {self.g2}", fontsize=14, fontweight="bold")
 
-        ax.spines["top"].set_visible(False)  
+        ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
         return fig

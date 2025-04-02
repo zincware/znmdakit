@@ -1,12 +1,13 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import MDAnalysis.analysis.msd as msd
 import numpy as np
 import pandas as pd
+import pint
 import zntrack
 from MDAnalysis import Universe
 from scipy.stats import linregress
-from pathlib import Path
-import matplotlib.pyplot as plt
-import pint
 
 from znmdakit.transformations import UnWrap, get_com_transform
 
@@ -77,7 +78,7 @@ class SelfDiffusionFromMSD(zntrack.Node):
             self.data.results.msd.iloc[self.start_time : self.end_time],
         )
 
-        diff = (linear_model.slope  / 6) * ureg.angstrom**2 / ureg.picosecond
+        diff = (linear_model.slope / 6) * ureg.angstrom**2 / ureg.picosecond
         # diff = diff.to(ureg.meter**2 / ureg.second)
         diff = diff.to(ureg.angstrom**2 / ureg.nanosecond)
         # convert to nm / s
@@ -91,10 +92,18 @@ class SelfDiffusionFromMSD(zntrack.Node):
 
         self.fit_figure.parent.mkdir(parents=True, exist_ok=True)
 
-        fig, ax = plt.subplots(figsize=(6, 4), dpi=150)  # Adjust figure size and resolution
+        fig, ax = plt.subplots(
+            figsize=(6, 4), dpi=150
+        )  # Adjust figure size and resolution
 
         # Plot MSD and fit line with improved styling
-        ax.plot(self.data.results.index, self.data.results.msd, label="MSD", lw=2, color="royalblue")
+        ax.plot(
+            self.data.results.index,
+            self.data.results.msd,
+            label="MSD",
+            lw=2,
+            color="royalblue",
+        )
         ax.plot(
             self.data.results.index,
             linear_model.slope * self.data.results.index + linear_model.intercept,
@@ -122,7 +131,9 @@ class SelfDiffusionFromMSD(zntrack.Node):
             f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\nR²: {linear_model.rvalue:.2f}",
             transform=ax.transAxes,
             fontsize=10,
-            bbox=dict(facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"),
+            bbox=dict(
+                facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"
+            ),
         )
 
         fig.savefig(self.fit_figure, bbox_inches="tight")
