@@ -1,16 +1,14 @@
 from pathlib import Path
 
-import ase
 import ase.atoms
 import MDAnalysis as mda
 import znh5md
 from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
-import networkx as nx
 import numpy as np
 
 
-def get_bonds(atoms: ase.Atoms, mult:float = 1.2) -> list[tuple[int, int]]:
+def get_bonds(atoms: ase.Atoms, mult: float = 1.2) -> list[tuple[int, int]]:
     """Calculate the bonds in an ASE Atoms object.
 
     Parameters
@@ -25,16 +23,24 @@ def get_bonds(atoms: ase.Atoms, mult:float = 1.2) -> list[tuple[int, int]]:
     list of tuple of int
         A list of tuples, each containing two indices of bonded atoms.
     """
-    assert all(atoms.pbc) is True
-    connectivity_matrix = np.zeros((len(atoms), len(atoms)), dtype=int)
+    if not all(atoms.pbc):
+        raise ValueError("Periodic boundary conditions must be enabled for all axes.")
+
+    # Compute distance matrix with minimum image convention
     distance_matrix = atoms.get_all_distances(mic=True)
-    np.fill_diagonal(distance_matrix, np.inf)
+    np.fill_diagonal(distance_matrix, np.inf)  # Ignore self-distances
+
+    # Compute cutoff distances
     cutoffs = np.array(natural_cutoffs(atoms, mult=mult))
-    cutoffs = cutoffs[:, None] + cutoffs[None, :]
-    connectivity_matrix[distance_matrix <= cutoffs] += 1
-    G = nx.from_numpy_array(connectivity_matrix)
-    
-    return [(i, j) for i, j in G.edges() if i < j]
+    cutoff_matrix = cutoffs[:, None] + cutoffs[None, :]
+
+    # Find bonded pairs
+    bonded_indices = np.argwhere(distance_matrix <= cutoff_matrix)
+
+    # Ensure i < j to avoid duplicate bonds
+    bonds = [(i, j) for i, j in bonded_indices if i < j]
+
+    return bonds
 
 
 def get_universe(file: Path) -> mda.Universe:
