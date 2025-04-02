@@ -21,8 +21,6 @@ def get_bonds(atoms: ase.Atoms) -> list[tuple[int, int]]:
     list of tuple of int
         A list of tuples, each containing two indices of bonded atoms.
     """
-    # fix pbc
-    atoms.set_pbc(True) # TODO: something is wrong here!
     # Step 1: Calculate natural cutoffs
     cutoffs = natural_cutoffs(atoms)
 

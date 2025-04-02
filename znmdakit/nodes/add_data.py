@@ -1,20 +1,15 @@
 import ase.io
 import zntrack
-from pathlib import Path
-import znh5md
-import h5py
+from tqdm import tqdm
 
-class AddData(zntrack.Node):
+class ReadData(zntrack.Node):
     file: str = zntrack.deps_path()
-    frames_path: Path = zntrack.outs_path(zntrack.nwd / "frames.h5")
 
     def run(self):
-        frames = list(ase.io.read(self.file, index=":"))
-        io = znh5md.IO(self.frames_path)
-        io.extend(frames)
+        pass
     
     @property
     def frames(self) -> list[ase.Atoms]:
-        with self.state.fs.open(self.frames_path, "rb") as f:
-            with h5py.File(f, "r") as h5:
-                return znh5md.IO(file_handle=h5)[:]
+        if self.state.rev is not None or self.state.remote is not None:
+            raise ValueError("Cannot read frames from a different rev/remote")
+        return list(tqdm(ase.io.read(self.file, index=":"), desc="Reading frames", unit="frame", ncols=80))
