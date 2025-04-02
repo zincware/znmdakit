@@ -1,0 +1,3 @@
+[submodule "znmdakit-examples"]
+	path = znmdakit-examples
+	url = https://github.com/PythonFZ/znmdakit-examples
