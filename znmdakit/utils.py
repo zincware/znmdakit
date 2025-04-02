@@ -2,10 +2,10 @@ from pathlib import Path
 
 import ase.atoms
 import MDAnalysis as mda
+import numpy as np
 import znh5md
 from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
-import numpy as np
 
 
 def get_bonds(atoms: ase.Atoms, mult: float = 1.2) -> list[tuple[int, int]]:

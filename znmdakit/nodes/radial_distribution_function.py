@@ -6,9 +6,6 @@ import seaborn as sns
 import zntrack
 from MDAnalysis import Universe
 from MDAnalysis.analysis import rdf
-from pathlib import Path
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from znmdakit.transformations import get_com_transform
 
