@@ -1,16 +1,16 @@
+import typing as t
 from pathlib import Path
 
+import ase
 import matplotlib.pyplot as plt
 import MDAnalysis.analysis.msd as msd
 import numpy as np
 import pandas as pd
 import pint
+import plotly.graph_objects as go
 import zntrack
 from MDAnalysis import Universe
 from scipy.stats import linregress
-import plotly.graph_objects as go
-import typing as t
-import ase
 
 from znmdakit.transformations import UnWrap, get_com_transform
 
@@ -159,16 +159,13 @@ class SelfDiffusionFromMSD(zntrack.Node):
         for node in nodes:
             fig.add_trace(
                 go.Scatter(
-                    x=node.data.results.index[::100], # performance improvement
+                    x=node.data.results.index[::100],  # performance improvement
                     y=node.data.results.msd[::100],
                     mode="lines",
-                    name=node.name.replace(
-                        f"_{node.__class__.__name__}", ""
-                    ),
+                    name=node.name.replace(f"_{node.__class__.__name__}", ""),
                 )
             )
 
-        
         fig.update_layout(
             title="Mean Square Displacement",
             xaxis_title="Time (ps)",
