@@ -8,10 +8,21 @@ import pint
 import zntrack
 from MDAnalysis import Universe
 from scipy.stats import linregress
+import plotly.graph_objects as go
+import typing as t
+import ase
 
 from znmdakit.transformations import UnWrap, get_com_transform
 
 ureg = pint.UnitRegistry()
+
+FIGURES = t.Dict[str, go.Figure]
+FRAMES = t.List[ase.Atoms]
+
+
+class ComparisonResults(t.TypedDict):
+    frames: FRAMES
+    figures: FIGURES
 
 
 class EinsteinMSD(zntrack.Node):
@@ -138,3 +149,48 @@ class SelfDiffusionFromMSD(zntrack.Node):
         )
 
         fig.savefig(self.fit_figure, bbox_inches="tight")
+
+    @staticmethod
+    def compare(*nodes: "SelfDiffusionFromMSD") -> ComparisonResults:
+        # frames = sum([node.frames for node in nodes], [])
+        frames = [ase.Atoms()]
+
+        fig = go.Figure()
+        for node in nodes:
+            fig.add_trace(
+                go.Scatter(
+                    x=node.data.results.index[::100], # performance improvement
+                    y=node.data.results.msd[::100],
+                    mode="lines",
+                    name=node.name.replace(
+                        f"_{node.__class__.__name__}", ""
+                    ),
+                )
+            )
+
+        
+        fig.update_layout(
+            title="Mean Square Displacement",
+            xaxis_title="Time (ps)",
+            yaxis_title="MSD (Å²)",
+            legend_title="Models",
+            plot_bgcolor="rgba(0, 0, 0, 0)",
+            paper_bgcolor="rgba(0, 0, 0, 0)",
+        )
+        fig.update_xaxes(
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="rgba(120, 120, 120, 0.3)",
+            zeroline=False,
+        )
+        fig.update_yaxes(
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="rgba(120, 120, 120, 0.3)",
+            zeroline=False,
+        )
+
+        return ComparisonResults(
+            frames=frames,
+            figures={"msd": fig},
+        )
