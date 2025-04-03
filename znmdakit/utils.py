@@ -1,16 +1,17 @@
-from pathlib import Path
 import typing as t
+from pathlib import Path
 
-import plotly.graph_objects as go
 import ase
 import MDAnalysis as mda
 import numpy as np
+import plotly.graph_objects as go
 import znh5md
 from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
 
 FIGURES = t.Dict[str, go.Figure]
 FRAMES = t.List[ase.Atoms]
+
 
 class ComparisonResults(t.TypedDict):
     frames: FRAMES

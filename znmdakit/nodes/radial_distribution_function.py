@@ -1,7 +1,9 @@
 from pathlib import Path
 
+import ase
 import matplotlib.pyplot as plt
 import pandas as pd
+import plotly.graph_objects as go
 import seaborn as sns
 import zntrack
 from MDAnalysis import Universe
@@ -9,9 +11,6 @@ from MDAnalysis.analysis import rdf
 
 from znmdakit.transformations import get_com_transform
 from znmdakit.utils import ComparisonResults
-import ase
-import plotly.graph_objects as go
-
 
 
 class InterRDF(zntrack.Node):
