@@ -168,8 +168,8 @@ class SelfDiffusionFromMSD(zntrack.Node):
 
         fig.update_layout(
             title="Mean Square Displacement",
-            xaxis_title="Time (ps)",
-            yaxis_title="MSD (Å²)",
+            xaxis_title="Time t / ps",
+            yaxis_title="MSD / Å²",
             legend_title="Models",
             plot_bgcolor="rgba(0, 0, 0, 0)",
             paper_bgcolor="rgba(0, 0, 0, 0)",
