@@ -72,10 +72,11 @@ class SelfDiffusionFromMSD(zntrack.Node):
             raise ValueError("timestep/sampling_rate must be set")
 
         # How is the msd one shorter than the lagtimes?
-        # TODO: use loc on index and then iloc on the values
+        df_subset = self.data.results[self.start_time : self.end_time]
+
         linear_model = linregress(
-            self.data.results.index[self.start_time : self.end_time],
-            self.data.results.msd.iloc[self.start_time : self.end_time],
+            df_subset.index,
+            df_subset.msd,
         )
 
         diff = (linear_model.slope / 6) * ureg.angstrom**2 / ureg.picosecond
