@@ -1,4 +1,3 @@
-import typing as t
 from pathlib import Path
 
 import ase
@@ -13,16 +12,9 @@ from MDAnalysis import Universe
 from scipy.stats import linregress
 
 from znmdakit.transformations import UnWrap, get_com_transform
+from znmdakit.utils import ComparisonResults
 
 ureg = pint.UnitRegistry()
-
-FIGURES = t.Dict[str, go.Figure]
-FRAMES = t.List[ase.Atoms]
-
-
-class ComparisonResults(t.TypedDict):
-    frames: FRAMES
-    figures: FIGURES
 
 
 class EinsteinMSD(zntrack.Node):
