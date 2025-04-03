@@ -157,12 +157,14 @@ class SelfDiffusionFromMSD(zntrack.Node):
 
         fig = go.Figure()
         for node in nodes:
+            name = node.name.replace(f"_{node.__class__.__name__}", "")
+            name += f" ({node.metrics['diffusion']:.2f} Å²/ns)"
             fig.add_trace(
                 go.Scatter(
                     x=node.data.results.index[::100],  # performance improvement
                     y=node.data.results.msd[::100],
                     mode="lines",
-                    name=node.name.replace(f"_{node.__class__.__name__}", ""),
+                    name=name,
                 )
             )
 
