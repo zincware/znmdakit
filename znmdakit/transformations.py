@@ -63,7 +63,8 @@ class COMTransform(TransformationBase):
 
 
 def get_com_transform(universe) -> list:
-    # TODO: sanity check, write to XYZ, construct a base Node and one node that just writes the transformed trajectory to disk!
+    # TODO: sanity check, write to XYZ, construct a base Node and
+    # one node that just writes the transformed trajectory to disk!
     # when writing to disk, allow for a list of selection strings
     transformations = {}
     for residue in tqdm(universe.residues, desc="Updating atom names"):

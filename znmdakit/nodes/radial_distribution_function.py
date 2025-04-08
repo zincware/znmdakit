@@ -20,9 +20,9 @@ class InterRDF(zntrack.Node):
     nbins: int = zntrack.params()
     range: str | tuple = zntrack.params("auto")
 
-    apply_com_transform: bool = zntrack.params(
-        False
-    )  # replace the position of the first atom in each residue with the center of mass and name it COM
+    apply_com_transform: bool = zntrack.params(False)
+    # replace the position of the first atom in
+    # each residuewith the center of mass and name it COM
 
     figure_path: Path = zntrack.outs_path(zntrack.nwd / "rdf.png")
 
@@ -35,7 +35,7 @@ class InterRDF(zntrack.Node):
             transformations = get_com_transform(universe)
             universe.trajectory.add_transformations(*transformations)
 
-        RDF = rdf.InterRDF(
+        radial_dist_fn = rdf.InterRDF(
             universe.select_atoms(self.g1),
             universe.select_atoms(self.g2),
             nbins=1000,
@@ -43,10 +43,13 @@ class InterRDF(zntrack.Node):
             if self.range == "auto"
             else self.range,
         )
-        RDF.run(verbose=True)
+        radial_dist_fn.run(verbose=True)
 
         self.results = pd.DataFrame(
-            {"r": RDF.results.bins[1:], "g(r)": RDF.results.rdf[1:]}
+            {
+                "r": radial_dist_fn.results.bins[1:],
+                "g(r)": radial_dist_fn.results.rdf[1:],
+            }
         )
 
         self.results.set_index("r", inplace=True)

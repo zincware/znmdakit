@@ -38,20 +38,22 @@ class EinsteinMSD(zntrack.Node):
             *transformations, UnWrap()
         )  # UnWrap is the last one!
 
-        MSD = msd.EinsteinMSD(universe, select=self.select, msd_type="xyz", fft=True)
-        MSD.run(verbose=True)
+        mean_sq_disp = msd.EinsteinMSD(
+            universe, select=self.select, msd_type="xyz", fft=True
+        )
+        mean_sq_disp.run(verbose=True)
 
         if self.timestep is not None and self.sampling_rate is not None:
             dt = self.timestep * self.sampling_rate
         else:
             dt = universe.trajectory.dt
 
-        lagtimes = np.arange(MSD.n_frames) * dt
+        lagtimes = np.arange(mean_sq_disp.n_frames) * dt
 
         self.results = pd.DataFrame(
             {
                 "lagtimes": lagtimes,
-                "msd": MSD.results.timeseries,
+                "msd": mean_sq_disp.results.timeseries,
             }
         )
         # set the index to lagtimes
@@ -132,7 +134,10 @@ class SelfDiffusionFromMSD(zntrack.Node):
         ax.text(
             0.05,  # Move slightly left
             0.85,  # Move slightly up
-            f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\nR²: {linear_model.rvalue:.2f}",
+            (
+                f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\n"
+                f"R²: {linear_model.rvalue**2:.2f}"
+            ),
             transform=ax.transAxes,
             fontsize=10,
             bbox={

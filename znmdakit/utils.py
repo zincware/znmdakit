@@ -2,7 +2,7 @@ import typing as t
 from pathlib import Path
 
 import ase
-import MDAnalysis as mda
+import MDAnalysis as mda  # noqa N813
 import numpy as np
 import plotly.graph_objects as go
 import znh5md
