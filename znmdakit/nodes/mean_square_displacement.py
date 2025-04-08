@@ -1,15 +1,18 @@
 from pathlib import Path
 
+import ase
 import matplotlib.pyplot as plt
 import MDAnalysis.analysis.msd as msd
 import numpy as np
 import pandas as pd
 import pint
+import plotly.graph_objects as go
 import zntrack
 from MDAnalysis import Universe
 from scipy.stats import linregress
 
 from znmdakit.transformations import UnWrap, get_com_transform
+from znmdakit.utils import ComparisonResults
 
 ureg = pint.UnitRegistry()
 
@@ -35,20 +38,22 @@ class EinsteinMSD(zntrack.Node):
             *transformations, UnWrap()
         )  # UnWrap is the last one!
 
-        MSD = msd.EinsteinMSD(universe, select=self.select, msd_type="xyz", fft=True)
-        MSD.run(verbose=True)
+        mean_sq_disp = msd.EinsteinMSD(
+            universe, select=self.select, msd_type="xyz", fft=True
+        )
+        mean_sq_disp.run(verbose=True)
 
         if self.timestep is not None and self.sampling_rate is not None:
             dt = self.timestep * self.sampling_rate
         else:
             dt = universe.trajectory.dt
 
-        lagtimes = np.arange(MSD.n_frames) * dt
+        lagtimes = np.arange(mean_sq_disp.n_frames) * dt
 
         self.results = pd.DataFrame(
             {
                 "lagtimes": lagtimes,
-                "msd": MSD.results.timeseries,
+                "msd": mean_sq_disp.results.timeseries,
             }
         )
         # set the index to lagtimes
@@ -72,10 +77,11 @@ class SelfDiffusionFromMSD(zntrack.Node):
             raise ValueError("timestep/sampling_rate must be set")
 
         # How is the msd one shorter than the lagtimes?
-        # TODO: use loc on index and then iloc on the values
+        df_subset = self.data.results[self.start_time : self.end_time]
+
         linear_model = linregress(
-            self.data.results.index[self.start_time : self.end_time],
-            self.data.results.msd.iloc[self.start_time : self.end_time],
+            df_subset.index,
+            df_subset.msd,
         )
 
         diff = (linear_model.slope / 6) * ureg.angstrom**2 / ureg.picosecond
@@ -128,12 +134,62 @@ class SelfDiffusionFromMSD(zntrack.Node):
         ax.text(
             0.05,  # Move slightly left
             0.85,  # Move slightly up
-            f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\nR²: {linear_model.rvalue:.2f}",
+            (
+                f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\n"
+                f"R²: {linear_model.rvalue**2:.2f}"
+            ),
             transform=ax.transAxes,
             fontsize=10,
-            bbox=dict(
-                facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"
-            ),
+            bbox={
+                "facecolor": "white",
+                "alpha": 0.6,
+                "edgecolor": "gray",
+                "boxstyle": "round,pad=0.3",
+            },
         )
 
         fig.savefig(self.fit_figure, bbox_inches="tight")
+
+    @staticmethod
+    def compare(*nodes: "SelfDiffusionFromMSD") -> ComparisonResults:
+        # frames = sum([node.frames for node in nodes], [])
+        frames = [ase.Atoms()]
+
+        fig = go.Figure()
+        for node in nodes:
+            name = node.name.replace(f"_{node.__class__.__name__}", "")
+            name += f" ({node.metrics['diffusion']:.2f} Å²/ns)"
+            fig.add_trace(
+                go.Scatter(
+                    x=node.data.results.index[::100],  # performance improvement
+                    y=node.data.results.msd[::100],
+                    mode="lines",
+                    name=name,
+                )
+            )
+
+        fig.update_layout(
+            title="Mean Square Displacement",
+            xaxis_title="Time t / ps",
+            yaxis_title="MSD / Å²",
+            legend_title="Models",
+            plot_bgcolor="rgba(0, 0, 0, 0)",
+            paper_bgcolor="rgba(0, 0, 0, 0)",
+        )
+        fig.update_xaxes(
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="rgba(120, 120, 120, 0.3)",
+            zeroline=False,
+        )
+        fig.update_yaxes(
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="rgba(120, 120, 120, 0.3)",
+            zeroline=False,
+        )
+
+        return ComparisonResults(
+            frames=frames,
+            figures={"msd": fig},
+        )

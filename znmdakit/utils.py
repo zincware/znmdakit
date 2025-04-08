@@ -1,11 +1,21 @@
+import typing as t
 from pathlib import Path
 
-import ase.atoms
-import MDAnalysis as mda
+import ase
+import MDAnalysis as mda  # noqa N813
 import numpy as np
+import plotly.graph_objects as go
 import znh5md
 from ase.neighborlist import natural_cutoffs
 from MDAnalysis.coordinates.H5MD import H5MDReader
+
+FIGURES = t.Dict[str, go.Figure]
+FRAMES = t.List[ase.Atoms]
+
+
+class ComparisonResults(t.TypedDict):
+    frames: FRAMES
+    figures: FIGURES
 
 
 def get_bonds(atoms: ase.Atoms, mult: float = 1.2) -> list[tuple[int, int]]:

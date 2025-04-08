@@ -59,7 +59,9 @@ class NernstEinsteinIonicConductivity(zntrack.Node):
 
             diff_x_charge.append(value)
 
-        sigma_NE = prefactor * sum(diff_x_charge)
-        sigma_NE = sigma_NE.to("S/m")
+        sigma_nernst_einst = prefactor * sum(diff_x_charge)
+        sigma_nernst_einst = sigma_nernst_einst.to("S/m")
 
-        self.metrics = {"Nernst-Einstein ionic conductivity": sigma_NE.magnitude}
+        self.metrics = {
+            "Nernst-Einstein ionic conductivity": sigma_nernst_einst.magnitude
+        }
