@@ -135,9 +135,12 @@ class SelfDiffusionFromMSD(zntrack.Node):
             f"Self-diffusion: {diff.magnitude:.2f} Å²/ns\nR²: {linear_model.rvalue:.2f}",
             transform=ax.transAxes,
             fontsize=10,
-            bbox=dict(
-                facecolor="white", alpha=0.6, edgecolor="gray", boxstyle="round,pad=0.3"
-            ),
+            bbox={
+                "facecolor": "white",
+                "alpha": 0.6,
+                "edgecolor": "gray",
+                "boxstyle": "round,pad=0.3",
+            },
         )
 
         fig.savefig(self.fit_figure, bbox_inches="tight")

@@ -59,7 +59,7 @@ class Universe(zntrack.Node):
                         break
                 else:
                     log.warning(
-                        f"Could not find residue for molecule {sorted(mol.names)} in residues {list(sorted(x.get_chemical_symbols()) for x in residues.values())}"
+                        f"Could not find residue for molecule {sorted(mol.names)} in residues {[sorted(x.get_chemical_symbols()) for x in residues.values()]}"
                     )
 
         return universe
